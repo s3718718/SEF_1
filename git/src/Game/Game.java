@@ -1,4 +1,5 @@
 package Game;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import Piece.Bishop;
@@ -8,21 +9,25 @@ import Piece.Rook;
 
 
 public class Game {
+	
 	public Board board;
 	Board lastTurnBoard;
 	int turns;
 	int currentTurn;
 	Player player1;
 	Player player2;
-	public Piece[] side1;
-	public Piece[] side2;
+	public Piece[] whiteSide;
+	public Piece[] blackSide;
 
-	public Game(int turns) {
+	public Game(int turns)
+	{
 		this.turns = turns;
 		board = new Board();
+		whiteSide = new Piece[6];
+		blackSide = new Piece[6];
 		instantiatePiece();
-		player1 = new Player(side1, true);
-		player2 = new Player(side2, false);
+		player1 = new Player(whiteSide, true);
+		player2 = new Player(blackSide, false);
 		currentTurn = 1;
 	}
 	//Flow of the game
@@ -121,36 +126,34 @@ public class Game {
 		nextTurn();
 	}
 
-	private void instantiatePiece(){
-		side1 = new Piece[6];
-		side2 = new Piece[6];
-		side1[0] = new Rook(board.tiles[0][0], true);
-		side1[1] = new Bishop(board.tiles[0][1], true);
-		side1[2] = new Knight(board.tiles[0][2], true);
-		side1[3] = new Rook(board.tiles[0][3], true);
-		side1[4] = new Bishop(board.tiles[0][4], true);
-		side1[5] = new Knight(board.tiles[0][5], true);
-		side2[0] = new Rook(board.tiles[5][0], false);
-		side2[1] = new Bishop(board.tiles[5][1], false);
-		side2[2] = new Knight(board.tiles[5][2], false);
-		side2[3] = new Rook(board.tiles[5][3], false);
-		side2[4] = new Bishop(board.tiles[5][4], false);
-		side2[5] = new Knight(board.tiles[5][5], false);
-	}
-
-	private void movePiece(Piece piece, Tile tile){
-		piece.moveTo(tile);
-		tile.setPiece(piece);
+	private void instantiatePiece()
+	{
+		whiteSide[0] = new Rook(board.tiles[0][0], true, board);
+		whiteSide[1] = new Bishop(board.tiles[0][1], true, board);
+		whiteSide[2] = new Knight(board.tiles[0][2], true, board);
+		
+		whiteSide[3] = new Knight(board.tiles[0][3], true, board);
+		whiteSide[4] = new Bishop(board.tiles[0][4], true, board);
+		whiteSide[5] = new Rook(board.tiles[0][5], true, board);
+		
+		blackSide[0] = new Rook(board.tiles[5][0], false, board);
+		blackSide[1] = new Bishop(board.tiles[5][1], false, board);
+		blackSide[2] = new Knight(board.tiles[5][2], false, board);
+	
+		blackSide[3] = new Knight(board.tiles[5][3], false, board);
+		blackSide[4] = new Bishop(board.tiles[5][4], false, board);
+		blackSide[5] = new Rook(board.tiles[5][5], false, board);
 	}
 
 	public boolean tryMove(Piece piece, Tile tile){
-		boolean check = piece.canMoveHere(board, tile.getPosition());
+		boolean check = piece.canMove(board, tile.getPosition());
 		//Check board is there is any piece at this position
 		if (check == true){
 			check = tile.isPieceHere();
+			ArrayList<Tile> list = piece.allMovements();
 			if (check == true){
-				boolean desSide = tile.getPiece().getIsSide1();
-				boolean thisPiece = piece.getIsSide1();
+				boolean desSide = tile.getPiece().getIsWhite();
+				boolean thisPiece = piece.getIsWhite();
 				if (desSide == thisPiece) {
 					System.out.println("****Destination piece is same side");
 					return false;
@@ -158,14 +161,22 @@ public class Game {
 				else {
 					tile.getPiece().setStatus(false);
 					tile.setPiece(null);
-					if (piece.getIsSide1() == true)
+					if (piece.getIsWhite() == true)
 						player1.setScore(player1.getScore()+1);
 					else player2.setScore(player2.getScore()+1);
-					movePiece(piece,tile);
+					piece.moveTo(tile);
+					if(list.contains(tile))
+					{
+						System.out.println("YEEET");
+					}
 				}
 			}
 			else {
-				movePiece(piece,tile);
+				piece.moveTo(tile);
+				if(list.contains(tile))
+				{
+					System.out.println("YEEET");
+				}
 			}
 		}
 		else {
